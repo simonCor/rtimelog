@@ -1,5 +1,6 @@
 use clap::Parser;
 use chrono::{Local, NaiveDateTime, Timelike, Weekday};
+use colored::*;
 use crate::parser;
 
 /// Simple program to greet a person
@@ -54,10 +55,10 @@ pub fn cli()
         let to = week.last_day().and_hms_opt(23, 59, 59).unwrap();
         let content = parser::get_range(from, to);
         //TODO: Print this prettier
-        println!("Entries for this week {} to {}", from.format("%Y-%m-%d").to_string(), to.format("%Y-%m-%d").to_string());
+        println!("Entries for this week {} to {}", from.format("%Y-%m-%d").to_string().yellow(), to.format("%Y-%m-%d").to_string().yellow());
         for one_entry in content
         {
-            println!("{} - {}", one_entry.0, one_entry.1)
+            println!("{} - {}", one_entry.0.to_string().green(), one_entry.1)
         }
     }
 }
