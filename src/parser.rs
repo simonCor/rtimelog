@@ -4,11 +4,11 @@ use std::fs::{read_to_string, OpenOptions};
 use std::io::prelude::*;
 use std::path::PathBuf;
 
-pub struct Parser {
+pub struct TimelogParser {
     pub path: PathBuf,
 }
 
-impl Parser {
+impl TimelogParser {
     pub fn append_entry_to_file(&self, date: NaiveDateTime, message: String) {
         let path = &self.path;
 
@@ -71,5 +71,24 @@ impl Parser {
         }
 
         result
+    }
+}
+
+pub struct TasksParser {
+    pub path: PathBuf,
+}
+
+impl TasksParser {
+    pub fn get_tasks(&self) -> Vec<String> {
+        let path = &self.path;
+
+        let mut tasks: Vec<String> = Vec::new();
+        for line in read_to_string(path).unwrap().lines() {
+            if !line.starts_with("#") {
+                tasks.push(line.to_string());
+            }
+        }
+
+        tasks
     }
 }
