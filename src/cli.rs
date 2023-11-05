@@ -47,7 +47,13 @@ impl ::std::default::Default for CliConfig {
 
 fn print_entry(entry: (NaiveDateTime, (String, Vec<String>))) {
     print!("{} - ", entry.0.to_string().green());
-    print!("{}", entry.1.0);
+    if entry.1.0.ends_with("**") | entry.1.0.ends_with("***")
+    {
+        print!("{}", entry.1.0.truecolor(115, 115, 115));
+    } else {
+        print!("{}", entry.1.0);
+    }
+
     if !entry.1.1.is_empty()
     {
         print!(" --");
