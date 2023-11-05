@@ -72,8 +72,20 @@ pub fn cli() {
         let local: NaiveDateTime = Local::now().naive_local();
         let task = match args.with_task {
             Some(number) => {
-                //TODO: Get entry from tasks list
-                "Placeholder task".to_string()
+                let tasks_parser = parser::TasksParser {
+                    path: get_tasks_file_path(),
+                };
+                let tasks = tasks_parser.get_tasks();
+                match tasks.get(&number) {
+                    Some(task) => {
+                        task.to_string()
+                    }
+                    None => {
+                        //TODO: Maybe a panic is not the right thing here
+                        panic!("The given task number does not exist");
+                    }
+
+                }
             }
             None => {
                 // Do nothing that is ok.
@@ -130,11 +142,9 @@ pub fn cli() {
         let tasks = tasks_parser.get_tasks();
 
         println!("Available tasks:");
-        let mut i = 0;
-        for one_entry in tasks {
+        for (i, one_entry) in tasks {
 
             println!("{}: {}", i, one_entry);
-            i += 1;
         }
     }
 }

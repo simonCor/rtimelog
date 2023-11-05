@@ -79,13 +79,15 @@ pub struct TasksParser {
 }
 
 impl TasksParser {
-    pub fn get_tasks(&self) -> Vec<String> {
+    pub fn get_tasks(&self) -> BTreeMap<i32, String> {
         let path = &self.path;
 
-        let mut tasks: Vec<String> = Vec::new();
+        let mut tasks: BTreeMap<i32, String> = BTreeMap::new();
+        let mut i = 0;
         for line in read_to_string(path).unwrap().lines() {
             if !line.starts_with("#") {
-                tasks.push(line.to_string());
+                tasks.insert(i, line.to_string());
+                i+=1;
             }
         }
 
