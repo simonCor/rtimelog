@@ -47,9 +47,13 @@ impl ::std::default::Default for CliConfig {
 
 fn print_entry(entry: (NaiveDateTime, (String, Vec<String>))) {
     print!("{} - ", entry.0.to_string().green());
-    print!("{} -- ", entry.1 .0);
-    for tag in entry.1 .1 {
-        print!("{} ", tag.cyan())
+    print!("{}", entry.1.0);
+    if !entry.1.1.is_empty()
+    {
+        print!(" --");
+        for tag in entry.1.1 {
+            print!(" {}", tag.cyan())
+        }
     }
     print!("\n");
 }
@@ -92,7 +96,15 @@ pub fn cli() {
                 String::new()
             }
         };
-        timelog_parser.append_entry_to_file(local, task + ": " + &args.new_entry);
+        let mut message: String = String::new();
+        if !task.is_empty()
+        {
+            message = task + ": "
+
+        } else {
+            message += &args.new_entry
+        }
+        timelog_parser.append_entry_to_file(local, message);
         println!("Added entry for today")
     }
 
