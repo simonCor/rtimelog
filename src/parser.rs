@@ -46,12 +46,16 @@ impl TimelogParser {
                 let description: String = splitted_description_tags
                     .next()
                     .expect("No description")
+                    .trim()
                     .to_string();
                 let tags = match splitted_description_tags.next() {
                     Some(tag_strings) => {
                         let mut tags: Vec<String> = Vec::new();
                         for tag in tag_strings.split(" ") {
-                            tags.push(tag.to_string());
+                            let trimmed_tag = tag.trim().to_string();
+                            if !trimmed_tag.is_empty() {
+                                tags.push(trimmed_tag.to_string());
+                            }
                         }
                         tags
                     }
