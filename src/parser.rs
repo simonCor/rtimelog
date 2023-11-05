@@ -91,7 +91,7 @@ impl TasksParser {
         for line in read_to_string(path).unwrap().lines() {
             if !line.starts_with("#") {
                 tasks.insert(i, line.to_string());
-                i+=1;
+                i += 1;
             }
         }
 

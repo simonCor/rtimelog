@@ -47,17 +47,15 @@ impl ::std::default::Default for CliConfig {
 
 fn print_entry(entry: (NaiveDateTime, (String, Vec<String>))) {
     print!("{} - ", entry.0.to_string().green());
-    if entry.1.0.ends_with("**") | entry.1.0.ends_with("***")
-    {
-        print!("{}", entry.1.0.truecolor(115, 115, 115));
+    if entry.1 .0.ends_with("**") | entry.1 .0.ends_with("***") {
+        print!("{}", entry.1 .0.truecolor(115, 115, 115));
     } else {
-        print!("{}", entry.1.0);
+        print!("{}", entry.1 .0);
     }
 
-    if !entry.1.1.is_empty()
-    {
+    if !entry.1 .1.is_empty() {
         print!(" --");
-        for tag in entry.1.1 {
+        for tag in entry.1 .1 {
             print!(" {}", tag.cyan())
         }
     }
@@ -67,7 +65,7 @@ fn print_entry(entry: (NaiveDateTime, (String, Vec<String>))) {
 pub fn cli() {
     let args = arguments::parse_args();
 
-/*     let config: CliConfig = match confy::load("rtimelog", None) {
+    /*     let config: CliConfig = match confy::load("rtimelog", None) {
         Ok(config) => config,
         Err(_) => {
             panic!("config error");
@@ -87,14 +85,11 @@ pub fn cli() {
                 };
                 let tasks = tasks_parser.get_tasks();
                 match tasks.get(&number) {
-                    Some(task) => {
-                        task.to_string()
-                    }
+                    Some(task) => task.to_string(),
                     None => {
                         //TODO: Maybe a panic is not the right thing here
                         panic!("The given task number does not exist");
                     }
-
                 }
             }
             None => {
@@ -103,10 +98,8 @@ pub fn cli() {
             }
         };
         let mut message: String = String::new();
-        if !task.is_empty()
-        {
+        if !task.is_empty() {
             message = task + ": "
-
         } else {
             message += &args.new_entry
         }
@@ -161,7 +154,6 @@ pub fn cli() {
 
         println!("Available tasks:");
         for (i, one_entry) in tasks {
-
             println!("{}: {}", i, one_entry);
         }
     }
