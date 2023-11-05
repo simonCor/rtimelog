@@ -40,17 +40,17 @@ impl TimelogParser {
                 date.push_str(splitted_line.next().expect("No content!"));
                 date.push(':');
                 date.push_str(splitted_line.next().expect("No content!"));
-                let descriptionWithTags: String =
+                let description_with_tags: String =
                     splitted_line.next().expect("No content!").to_string();
-                let mut splitted_description_tags = descriptionWithTags.split("--");
+                let mut splitted_description_tags = description_with_tags.split("--");
                 let description: String = splitted_description_tags
                     .next()
                     .expect("No description")
                     .to_string();
                 let tags = match splitted_description_tags.next() {
-                    Some(tagStrings) => {
+                    Some(tag_strings) => {
                         let mut tags: Vec<String> = Vec::new();
-                        for tag in tagStrings.split(" ") {
+                        for tag in tag_strings.split(" ") {
                             tags.push(tag.to_string());
                         }
                         tags
