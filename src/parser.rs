@@ -4,6 +4,8 @@ use std::fs::{read_to_string, OpenOptions};
 use std::io::prelude::*;
 use std::path::PathBuf;
 
+use humantime::format_duration;
+
 pub struct TimelogParser {
     pub path: PathBuf,
 }
@@ -73,6 +75,29 @@ impl TimelogParser {
                 }
             }
         }
+
+        //Calculate worktime
+        let mut first_date = from;
+        let mut last_date = from;
+        for entry in &result
+        {
+            if entry.1.0 == "arrived**"
+            {
+                first_date = *entry.0;
+            }
+
+            if entry.0 > &last_date
+            {
+                last_date = *entry.0;
+            }
+        }
+        let naive_worktime = (last_date - first_date);
+
+        //TODO: Consider breaks
+
+        //TODO: Remove these prints and return
+        println!("{} - {}", first_date.to_string(), last_date.to_string());
+        println!("naive: {}", format_duration(naive_worktime.to_std().expect("TODO")).to_string() );
 
         result
     }
