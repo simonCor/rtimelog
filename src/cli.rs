@@ -1,8 +1,9 @@
 use crate::parser;
-use chrono::{Local, NaiveDateTime, Timelike, Weekday};
+use chrono::{Local, NaiveDateTime, Timelike, Weekday, Duration};
 use colored::*;
 use home;
 use serde_derive::{Deserialize, Serialize};
+use humantime::format_duration;
 
 mod arguments;
 
@@ -60,6 +61,11 @@ fn print_entry(entry: (NaiveDateTime, (String, Vec<String>))) {
         }
     }
     print!("\n");
+}
+
+fn print_total_times(worktime: Duration, breaktime: Duration) {
+    println!("Total work time: {}", format_duration(worktime.to_std().expect("TODO")).to_string().truecolor(235, 235, 52) );
+    println!("Total break time: {}", format_duration(breaktime.to_std().expect("TODO")).to_string().truecolor(235, 235, 52) );
 }
 
 pub fn cli() {
@@ -122,10 +128,12 @@ pub fn cli() {
         let content = timelog_parser.get_range(from, to);
 
         //TODO: Print this prettier
-        println!("Entries for today {}", local.format("%Y-%m-%d").to_string());
-        for one_entry in content {
+        println!("Entries for today {}:", local.format("%Y-%m-%d").to_string().yellow());
+        for one_entry in content.entries {
             print_entry(one_entry);
         }
+        print!("\n");
+        print_total_times(content.worktime, content.breaktime);
     }
 
     if args.week {
@@ -141,9 +149,11 @@ pub fn cli() {
             from.format("%Y-%m-%d").to_string().yellow(),
             to.format("%Y-%m-%d").to_string().yellow()
         );
-        for one_entry in content {
+        for one_entry in content.entries {
             print_entry(one_entry);
         }
+        print!("\n");
+        print_total_times(content.worktime, content.breaktime);
     }
 
     if args.tasks {

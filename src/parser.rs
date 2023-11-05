@@ -1,11 +1,15 @@
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, Duration};
 use std::collections::BTreeMap;
 use std::fs::{read_to_string, OpenOptions};
 use std::io::prelude::*;
 use std::path::PathBuf;
 
-use humantime::format_duration;
-
+pub struct TimelogParseResult
+{
+    pub entries: BTreeMap<NaiveDateTime, (String, Vec<String>)>,
+    pub worktime: Duration,
+    pub breaktime: Duration
+}
 pub struct TimelogParser {
     pub path: PathBuf,
 }
@@ -30,7 +34,7 @@ impl TimelogParser {
         &self,
         from: NaiveDateTime,
         to: NaiveDateTime,
-    ) -> BTreeMap<NaiveDateTime, (String, Vec<String>)> {
+    ) -> TimelogParseResult {
         let mut result: BTreeMap<NaiveDateTime, (String, Vec<String>)> = BTreeMap::new();
         let path = &self.path;
 
@@ -79,6 +83,8 @@ impl TimelogParser {
         //Calculate worktime
         let mut first_date = from;
         let mut last_date = from;
+        let mut former_date = from;
+        let mut breaktime: Duration = Duration::days(0);
         for entry in &result
         {
             if entry.1.0 == "arrived**"
@@ -90,16 +96,24 @@ impl TimelogParser {
             {
                 last_date = *entry.0;
             }
+
+            if entry.1.0 == "break**"
+            {
+                let break_date = *entry.0;
+                let break_duration = break_date - former_date;
+                breaktime = breaktime + break_duration;
+            }
+            former_date = *entry.0;
         }
-        let naive_worktime = (last_date - first_date);
+        let worktime = (last_date - first_date) - breaktime;
 
-        //TODO: Consider breaks
+        let retval: TimelogParseResult = TimelogParseResult {
+            entries: result,
+            worktime: worktime,
+            breaktime: breaktime
+        };
 
-        //TODO: Remove these prints and return
-        println!("{} - {}", first_date.to_string(), last_date.to_string());
-        println!("naive: {}", format_duration(naive_worktime.to_std().expect("TODO")).to_string() );
-
-        result
+        retval
     }
 }
 
