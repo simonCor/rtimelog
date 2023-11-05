@@ -70,7 +70,7 @@ pub fn cli() {
 
     if args.new_entry.len() != 0 {
         let local: NaiveDateTime = Local::now().naive_local();
-        let task = match(args.with_task) {
+        let task = match args.with_task {
             Some(number) => {
                 //TODO: Get entry from tasks list
                 "Placeholder task".to_string()
