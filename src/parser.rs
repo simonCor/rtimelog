@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 use std::fs::{read_to_string, OpenOptions};
 use std::io::prelude::*;
 use std::path::PathBuf;
+use std::option::Option;
 
 pub struct TimelogParseResult
 {
@@ -81,30 +82,31 @@ impl TimelogParser {
         }
 
         //Calculate worktime
-        let mut first_date = from;
+        let mut first_date = to;
         let mut last_date = from;
-        let mut former_date = from;
+        let mut former_date: Option<NaiveDateTime> = None;
         let mut breaktime: Duration = Duration::days(0);
-        for entry in &result
+        for (date, (description, _tags)) in &result
         {
-            if entry.1.0 == "arrived**"
+            if date < &first_date
             {
-                first_date = *entry.0;
+                first_date = *date;
             }
 
-            if entry.0 > &last_date
+            if date > &last_date
             {
-                last_date = *entry.0;
+                last_date = *date;
             }
 
-            if entry.1.0 == "break**"
+            if description.ends_with("**") && former_date.is_some()
             {
-                let break_date = *entry.0;
-                let break_duration = break_date - former_date;
+                let break_date = *date;
+                let break_duration = break_date - former_date.unwrap();
                 breaktime = breaktime + break_duration;
             }
-            former_date = *entry.0;
+            former_date = Some(*date);
         }
+        println!("{} - {} - {}", last_date, first_date, breaktime);
         let worktime = (last_date - first_date) - breaktime;
 
         let retval: TimelogParseResult = TimelogParseResult {
