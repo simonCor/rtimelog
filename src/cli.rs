@@ -105,7 +105,7 @@ pub fn cli() {
         };
         let mut message: String = String::new();
         if !task.is_empty() {
-            message = task + ": "
+            message = task + ": " + &args.new_entry
         } else {
             message += &args.new_entry
         }
