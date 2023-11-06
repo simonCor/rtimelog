@@ -82,89 +82,91 @@ pub fn cli() {
         path: get_timelog_file_path(),
     }; //TODO: from config
 
-    if args.new_entry.len() != 0 {
-        let local: NaiveDateTime = Local::now().naive_local();
-        let task = match args.with_task {
-            Some(number) => {
-                let tasks_parser = parser::TasksParser {
-                    path: get_tasks_file_path(),
-                };
-                let tasks = tasks_parser.get_tasks();
-                match tasks.get(&number) {
-                    Some(task) => task.to_string(),
-                    None => {
-                        //TODO: Maybe a panic is not the right thing here
-                        panic!("The given task number does not exist");
+    match args.command {
+        arguments::Command::Entry{ description, task } => {
+            let local: NaiveDateTime = Local::now().naive_local();
+            let task = match task {
+                Some(number) => {
+                    let tasks_parser = parser::TasksParser {
+                        path: get_tasks_file_path(),
+                    };
+                    let tasks = tasks_parser.get_tasks();
+                    match tasks.get(&number) {
+                        Some(task) => task.to_string(),
+                        None => {
+                            //TODO: Maybe a panic is not the right thing here
+                            panic!("The given task number does not exist");
+                        }
                     }
                 }
+                None => {
+                    // Do nothing that is ok.
+                    String::new()
+                }
+            };
+            let mut message: String = String::new();
+            if !task.is_empty() {
+                message = task + ": " + &description
+            } else {
+                message += &description
             }
-            None => {
-                // Do nothing that is ok.
-                String::new()
+            timelog_parser.append_entry_to_file(local, message);
+            println!("Added entry for today")
+        }
+
+        arguments::Command::Today{} => {
+            let local: NaiveDateTime = Local::now().naive_local();
+            let from = local
+                .with_hour(0)
+                .expect("arggghh1")
+                .with_minute(0)
+                .expect("dfsdfsd");
+            let to = local
+                .with_hour(23)
+                .expect("arggghh2")
+                .with_minute(59)
+                .expect("sdfds");
+            let content = timelog_parser.get_range(from, to);
+
+            //TODO: Print this prettier
+            println!("Entries for today {}:", local.format("%Y-%m-%d").to_string().yellow());
+            for one_entry in content.entries {
+                print_entry(one_entry);
             }
-        };
-        let mut message: String = String::new();
-        if !task.is_empty() {
-            message = task + ": " + &args.new_entry
-        } else {
-            message += &args.new_entry
+            print!("\n");
+            print_total_times(content.worktime, content.breaktime);
         }
-        timelog_parser.append_entry_to_file(local, message);
-        println!("Added entry for today")
-    }
 
-    if args.today {
-        let local: NaiveDateTime = Local::now().naive_local();
-        let from = local
-            .with_hour(0)
-            .expect("arggghh1")
-            .with_minute(0)
-            .expect("dfsdfsd");
-        let to = local
-            .with_hour(23)
-            .expect("arggghh2")
-            .with_minute(59)
-            .expect("sdfds");
-        let content = timelog_parser.get_range(from, to);
+        arguments::Command::Week{} => {
+            let local: NaiveDateTime = Local::now().naive_local();
+            let week = local.date().week(Weekday::Mon);
 
-        //TODO: Print this prettier
-        println!("Entries for today {}:", local.format("%Y-%m-%d").to_string().yellow());
-        for one_entry in content.entries {
-            print_entry(one_entry);
+            let from = week.first_day().and_hms_opt(0, 0, 0).unwrap();
+            let to = week.last_day().and_hms_opt(23, 59, 59).unwrap();
+            let content = timelog_parser.get_range(from, to);
+            //TODO: Print this prettier
+            println!(
+                "Entries for this week {} to {}",
+                from.format("%Y-%m-%d").to_string().yellow(),
+                to.format("%Y-%m-%d").to_string().yellow()
+            );
+            for one_entry in content.entries {
+                print_entry(one_entry);
+            }
+            print!("\n");
+            print_total_times(content.worktime, content.breaktime);
         }
-        print!("\n");
-        print_total_times(content.worktime, content.breaktime);
-    }
 
-    if args.week {
-        let local: NaiveDateTime = Local::now().naive_local();
-        let week = local.date().week(Weekday::Mon);
+        arguments::Command::Tasks{} => {
+            let tasks_parser = parser::TasksParser {
+                path: get_tasks_file_path(),
+            };
+            let tasks = tasks_parser.get_tasks();
 
-        let from = week.first_day().and_hms_opt(0, 0, 0).unwrap();
-        let to = week.last_day().and_hms_opt(23, 59, 59).unwrap();
-        let content = timelog_parser.get_range(from, to);
-        //TODO: Print this prettier
-        println!(
-            "Entries for this week {} to {}",
-            from.format("%Y-%m-%d").to_string().yellow(),
-            to.format("%Y-%m-%d").to_string().yellow()
-        );
-        for one_entry in content.entries {
-            print_entry(one_entry);
-        }
-        print!("\n");
-        print_total_times(content.worktime, content.breaktime);
-    }
-
-    if args.tasks {
-        let tasks_parser = parser::TasksParser {
-            path: get_tasks_file_path(),
-        };
-        let tasks = tasks_parser.get_tasks();
-
-        println!("Available tasks:");
-        for (i, one_entry) in tasks {
-            println!("{}: {}", i, one_entry);
+            println!("Available tasks:");
+            for (i, one_entry) in tasks {
+                println!("{}: {}", i, one_entry);
+            }
         }
     }
 }

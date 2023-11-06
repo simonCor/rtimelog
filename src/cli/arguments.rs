@@ -1,32 +1,46 @@
-use clap::Parser;
+use clap::{Args, Parser, Subcommand};
 
-//TODO: Rewrite or understand the used syntax
+#[derive(Debug, Parser)]
+#[clap(author, version, about, long_about = None)]
+pub struct App {
+    #[clap(flatten)]
+    pub global_opts: GlobalOpts,
 
-/// time logging program
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-pub struct Args {
-    /// Show today
-    #[arg(short, long, default_value_t = false)]
-    pub today: bool,
-
-    /// Show the current week
-    #[arg(short, long, default_value_t = false)]
-    pub week: bool,
-
-    /// Add an entry
-    #[arg(short, long, default_value_t = String::new())]
-    pub new_entry: String,
-
-    #[arg(short('k'), long, required(false))]
-    pub with_task: Option<i32>,
-
-    /// Show available tasks
-    #[arg(long, default_value_t = false)]
-    pub tasks: bool,
+    #[clap(subcommand)]
+    pub command: Command,
 }
 
-pub fn parse_args() -> Args
+
+#[derive(Debug, Subcommand)]
+pub enum Command {
+    /// Make a new entry
+    Entry {
+        /// The entry description
+        description: String,
+        /// An example option
+        #[clap(long, short = 't')]
+        task: Option<i32>,
+    },
+    /// Show entries for today
+    Today {
+
+    },
+    /// Show entries for current week
+    Week {
+
+    },
+    /// Show available tasks
+    Tasks {
+
+    },
+}
+
+#[derive(Debug, Args)]
+pub struct GlobalOpts {
+    //... other global options
+}
+
+pub fn parse_args() -> App
 {
-    Args::parse()
+    App::parse()
 }
