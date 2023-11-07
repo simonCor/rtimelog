@@ -46,17 +46,18 @@ impl ::std::default::Default for CliConfig {
     }
 }
 
-fn print_entry(entry: (NaiveDateTime, (String, Vec<String>))) {
-    print!("{} - ", entry.0.to_string().green());
-    if entry.1 .0.ends_with("**") | entry.1 .0.ends_with("***") {
-        print!("{}", entry.1 .0.truecolor(115, 115, 115));
+fn print_entry(entry: (NaiveDateTime, (String, Vec<String>, Duration))) {
+    let (date, (description, tags, duration)) = entry;
+    print!("{} ({}) - ", date.to_string().green(), format_duration(duration.to_std().expect("TODO")).to_string().truecolor(235, 235, 52));
+    if description.ends_with("**") {
+        print!("{}", description.truecolor(115, 115, 115));
     } else {
-        print!("{}", entry.1 .0);
+        print!("{}", description);
     }
 
-    if !entry.1 .1.is_empty() {
+    if !tags.is_empty() {
         print!(" --");
-        for tag in entry.1 .1 {
+        for tag in tags {
             print!(" {}", tag.cyan())
         }
     }
@@ -114,7 +115,7 @@ pub fn cli() {
             println!("Added entry for today")
         }
 
-        arguments::Command::Today{} => {
+        arguments::Command::Today{filter} => {
             let local: NaiveDateTime = Local::now().naive_local();
             let from = local
                 .with_hour(0)
@@ -126,7 +127,7 @@ pub fn cli() {
                 .expect("arggghh2")
                 .with_minute(59)
                 .expect("sdfds");
-            let content = timelog_parser.get_range(from, to);
+            let content = timelog_parser.get_range(from, to, filter);
 
             //TODO: Print this prettier
             println!("Entries for today {}:", local.format("%Y-%m-%d").to_string().yellow());
@@ -137,13 +138,13 @@ pub fn cli() {
             print_total_times(content.worktime, content.breaktime);
         }
 
-        arguments::Command::Week{} => {
+        arguments::Command::Week{filter} => {
             let local: NaiveDateTime = Local::now().naive_local();
             let week = local.date().week(Weekday::Mon);
 
             let from = week.first_day().and_hms_opt(0, 0, 0).unwrap();
             let to = week.last_day().and_hms_opt(23, 59, 59).unwrap();
-            let content = timelog_parser.get_range(from, to);
+            let content = timelog_parser.get_range(from, to, filter);
             //TODO: Print this prettier
             println!(
                 "Entries for this week {} to {}",

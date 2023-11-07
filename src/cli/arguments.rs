@@ -23,11 +23,14 @@ pub enum Command {
     },
     /// Show entries for today
     Today {
+        ///Filter for a string
+        filter: Option<String>,
 
     },
     /// Show entries for current week
     Week {
-
+        ///Filter for a string
+        filter: Option<String>,
     },
     /// Show available tasks
     Tasks {
