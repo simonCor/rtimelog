@@ -42,7 +42,8 @@ impl TimelogParser {
         let mut former_date: Option<NaiveDateTime> = None;
         for line in read_to_string(path).unwrap().lines() {
             if !line.starts_with("#") {
-                let (date, description, tags, duration) = TimelogParser::convert_line(line, former_date);
+                let (date, description, tags, duration) =
+                    TimelogParser::convert_line(line, former_date);
                 former_date = Some(date);
                 if (date >= from)
                     && (date <= to)
@@ -59,9 +60,8 @@ impl TimelogParser {
         //Calculate worktime
         let mut breaktime: Duration = Duration::seconds(0);
         let mut worktime: Duration = Duration::seconds(0);
-        for (date, (description, _tags, duration)) in &result {
-            if description.ends_with("arrived**")
-            {
+        for (_date, (description, _tags, duration)) in &result {
+            if description.ends_with("arrived**") {
                 //ignore is arrived marker
             } else if description.ends_with("**") {
                 breaktime = breaktime + *duration;
@@ -79,7 +79,10 @@ impl TimelogParser {
         retval
     }
 
-    fn convert_line(line: &str, former_date: Option<NaiveDateTime>) -> (NaiveDateTime, String, Vec<String>, Duration) {
+    fn convert_line(
+        line: &str,
+        former_date: Option<NaiveDateTime>,
+    ) -> (NaiveDateTime, String, Vec<String>, Duration) {
         let mut splitted_line = line.splitn(3, ':');
         let mut date = String::new();
         date.push_str(splitted_line.next().expect("No content!"));
@@ -111,8 +114,14 @@ impl TimelogParser {
 
         let date = NaiveDateTime::parse_from_str(&date, "%Y-%m-%d %H:%M").expect("Parsing failed!");
         let duration = match former_date {
-            Some(former_date) => { date - former_date },
-            None => Duration::days(0)
+            Some(former_date) => {
+                if description == "arrived**" {
+                    Duration::days(0)
+                } else {
+                    date - former_date
+                }
+            }
+            None => Duration::days(0),
         };
         (date, description, tags, duration)
     }

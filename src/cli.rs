@@ -1,5 +1,5 @@
 use crate::parser;
-use chrono::{Local, NaiveDateTime, Timelike, Weekday, Duration};
+use chrono::{Local, NaiveDateTime, Timelike, Weekday, Duration, NaiveDate};
 use colored::*;
 use home;
 use serde_derive::{Deserialize, Serialize};
@@ -48,7 +48,7 @@ impl ::std::default::Default for CliConfig {
 
 fn print_entry(entry: (NaiveDateTime, (String, Vec<String>, Duration))) {
     let (date, (description, tags, duration)) = entry;
-    print!("{} ({}) - ", date.to_string().green(), format_duration(duration.to_std().expect("TODO")).to_string().truecolor(235, 235, 52));
+    print!("{} ({:>6}) - ", date.to_string().green(), format_duration(duration.to_std().expect("TODO")).to_string().truecolor(235, 235, 52));
     if description.ends_with("**") {
         print!("{}", description.truecolor(115, 115, 115));
     } else {
@@ -65,8 +65,8 @@ fn print_entry(entry: (NaiveDateTime, (String, Vec<String>, Duration))) {
 }
 
 fn print_total_times(worktime: Duration, breaktime: Duration) {
-    println!("Total work time: {}", format_duration(worktime.to_std().expect("TODO")).to_string().truecolor(235, 235, 52) );
-    println!("Total break time: {}", format_duration(breaktime.to_std().expect("TODO")).to_string().truecolor(235, 235, 52) );
+    println!("{:<18} {:>6}", "Total work time:", format_duration(worktime.to_std().expect("TODO")).to_string().truecolor(235, 235, 52) );
+    println!("{:<18} {:>6}", "Total break time:", format_duration(breaktime.to_std().expect("TODO")).to_string().truecolor(235, 235, 52) );
 }
 
 pub fn cli() {
@@ -131,6 +131,25 @@ pub fn cli() {
 
             //TODO: Print this prettier
             println!("Entries for today {}:", local.format("%Y-%m-%d").to_string().yellow());
+            for one_entry in content.entries {
+                print_entry(one_entry);
+            }
+            print!("\n");
+            print_total_times(content.worktime, content.breaktime);
+        }
+
+        arguments::Command::Date{date ,filter} => {
+            let date: NaiveDate = match NaiveDate::parse_from_str(&date, "%Y-%m-%d")
+            {
+                Ok(x) => {x},
+                Err(_) => {panic!("The delivered date could not be parsed. Use format Y-m-d")}
+            };
+            let from = date.and_hms_opt(0,0,0).unwrap();
+            let to = date.and_hms_opt(23,59,59).unwrap();
+            let content = timelog_parser.get_range(from, to, filter);
+
+            //TODO: Print this prettier
+            println!("Entries for today {}:", date.format("%Y-%m-%d").to_string().yellow());
             for one_entry in content.entries {
                 print_entry(one_entry);
             }
